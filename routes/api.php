@@ -18,4 +18,4 @@ Route::get('/user', function (Request $request) {
 })->middleware('jwt.auth');
 
 Route::post('auth', 'Api\AuthController@authenticate');
-// Route::get('auth/me', 'Api\AuthController@getAuthenticatedUser');
+Route::get('auth/me', 'Api\AuthController@getAuthenticatedUser');
