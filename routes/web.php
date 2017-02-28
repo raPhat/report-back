@@ -14,3 +14,9 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::group(['prefix' => 'errors'], function () {
+	Route::get('invalid', function () {
+        return response('forbidden', 403);
+    });
+});
