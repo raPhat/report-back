@@ -3,12 +3,21 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\UserService;
 use Illuminate\Http\Request;
 use JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthController extends Controller
 {
+    private $userService;
+    public function __construct(
+        UserService $userService
+    )
+    {
+        $this->userService = $userService;
+    }
+
     public function authenticate(Request $request)
     {
         // grab credentials from the request
@@ -52,6 +61,10 @@ class AuthController extends Controller
         }
         
         // the token is valid and we have found the user via the sub claim
-        return response()->json(compact('user'));
+        return response()->json($user->with(['Users', 'Students', 'Mentors', 'Supervisors'])->first());
+    }
+
+    function register(Request $request) {
+        return $this->userService->create($request);
     }
 }

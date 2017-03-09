@@ -18,12 +18,37 @@ class CreateUsersTable extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
+            $table->string('role');
+            $table->string('code')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
 
-        $user = ['name' => 'Veerapat In-ongkarn','email' => 'karjkeng@hotmail.com','password' => bcrypt('karjkeng')];
-        $db = DB::table('users')->insert($user);
+        Schema::create('students_has_users', function (Blueprint $table) {
+            $table->increments('id');
+            $table->integer('student_id');
+            $table->integer('user_id');
+            $table->timestamps();
+        });
+
+        $student = [
+            'name' => 'Veerapat In-ongkarn',
+            'email' => 'karjkeng@hotmail.com',
+            'password' => bcrypt('karjkeng'),
+            'role' => 'student'
+        ];
+        $mentor = [
+            'name' => 'mentor',
+            'email' => 'mentor@hotmail.com',
+            'password' => bcrypt('karjkeng'),
+            'role' => 'mentor'
+        ];
+        DB::table('users')->insert($student);
+        DB::table('users')->insert($mentor);
+        DB::table('students_has_users')->insert([
+            'student_id' => 1,
+            'user_id' => 2
+        ]);
     }
 
     /**
@@ -34,5 +59,6 @@ class CreateUsersTable extends Migration
     public function down()
     {
         Schema::dropIfExists('users');
+        Schema::dropIfExists('students_has_users');
     }
 }

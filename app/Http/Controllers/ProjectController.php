@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreProjectPost;
-use App\Project;
-use App\TaskLog;
+use App\Models\Project;
+use App\Models\TaskLog;
 
 class ProjectController extends Controller
 {
@@ -21,11 +21,16 @@ class ProjectController extends Controller
     }
 
     public function logs($id) {
+        $logs = $this->getLogs($id);
+        return response()->json($logs);
+    }
+
+    private function getLogs($id) {
         $project_id = $id;
         $logs = TaskLog::with('Task')->whereHas('Task', function ($query) use ($project_id) {
             $query->where('project_id', $project_id);
         })->get();
-        return response()->json($logs);
+        return $logs;
     }
 
     /**
@@ -46,10 +51,12 @@ class ProjectController extends Controller
      */
     public function store(StoreProjectPost $request)
     {
+        $user = $request->user();
         $project = new Project();
         $project->name = $request->name;
         $project->description = $request->description;
         $project->start = (isset($request->start['epoc'])) ? date('Y-m-d', $request->start['epoc']) : null;
+        $project->user_id = $user->id;
         $project->save();
 
         return response()->json($project);
@@ -63,8 +70,18 @@ class ProjectController extends Controller
      */
     public function show($id)
     {
-        $project = Project::findOrFail($id);
+        $project = Project::where('id', $id)->first();
+        $logs = $this->getLogs($id);
+        $project['logs'] = $logs;
         return response()->json($project);
+    }
+
+    public function myProject(Request $request) {
+        $user = $request->user();
+        $projects = Project::where('user_id', $user->id)->get();
+//        $logs = $this->getLogs($project->id);
+//        $project['logs'] = $logs;
+        return response()->json($projects);
     }
 
     /**
