@@ -29,6 +29,8 @@ Route::group(['middleware' => 'cors'], function () {
         Route::put('tasks/change/{id}', 'TaskController@changeTo');
         // users
         Route::get('users/code/{id}', 'UserController@getUserByCode');
+        Route::post('users/code', 'UserController@setUserOfStudent');
+        Route::delete('users/code/{id}', 'UserController@deleteUserOfStudent');
     });
 });
 

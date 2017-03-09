@@ -38,18 +38,18 @@ class UserService
         return $student->Supervisors();
     }
 
-    function setMentorOfStudent($id, $sid) {
+    function setUserOfStudent($id, $sid) {
         $student = $this->model->find($sid);
-        $student->Mentors()->aysn($id);
+        $student->Users()->sync([$id], false);
         $student->save();
-        return $student->Mentors();
+        return $this->withFull($student);
     }
 
-    function setSupervisorOfStudent($id, $sid) {
+    function deleteUserOfStudent($id, $sid) {
         $student = $this->model->find($sid);
-        $student->Supervisors()->aysn($id);
+        $student->Users()->detach($id);
         $student->save();
-        return $student->Supervisors();
+        return $this->withFull($student);
     }
 
     function create($data) {
@@ -93,6 +93,10 @@ class UserService
         $mentor->code = $this->hashCode($mentor->id);
         $mentor->save();
         return $mentor;
+    }
+
+    function withFull($user) {
+        return $user->with(['Users', 'Students', 'Mentors', 'Supervisors']);
     }
 
     private function setDetail($user, $data) {

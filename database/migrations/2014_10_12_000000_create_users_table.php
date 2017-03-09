@@ -41,10 +41,27 @@ class CreateUsersTable extends Migration
             'name' => 'mentor',
             'email' => 'mentor@hotmail.com',
             'password' => bcrypt('karjkeng'),
-            'role' => 'mentor'
+            'role' => 'mentor',
+            'code' => '12345'
+        ];
+        $mentor2 = [
+            'name' => 'mentor2',
+            'email' => 'mentor2@hotmail.com',
+            'password' => bcrypt('karjkeng'),
+            'role' => 'mentor',
+            'code' => '23456'
+        ];
+        $super = [
+            'name' => 'super',
+            'email' => 'super@hotmail.com',
+            'password' => bcrypt('karjkeng'),
+            'role' => 'supervisor',
+            'code' => '11111'
         ];
         DB::table('users')->insert($student);
         DB::table('users')->insert($mentor);
+        DB::table('users')->insert($mentor2);
+        DB::table('users')->insert($super);
         DB::table('students_has_users')->insert([
             'student_id' => 1,
             'user_id' => 2

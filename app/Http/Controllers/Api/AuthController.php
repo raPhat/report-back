@@ -61,7 +61,7 @@ class AuthController extends Controller
         }
         
         // the token is valid and we have found the user via the sub claim
-        return response()->json($user->with(['Users', 'Students', 'Mentors', 'Supervisors'])->first());
+        return response()->json($this->userService->withFull($user)->first());
     }
 
     function register(Request $request) {

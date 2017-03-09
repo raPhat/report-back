@@ -9,4 +9,8 @@ class TaskLog extends Model
     public function Task() {
         return $this->belongsTo('App\Models\Task', 'task_id');
     }
+
+    public function TaskType() {
+        return $this->belongsTo('App\Models\TaskType');
+    }
 }
