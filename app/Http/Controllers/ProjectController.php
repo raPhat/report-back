@@ -27,9 +27,9 @@ class ProjectController extends Controller
 
     private function getLogs($id) {
         $project_id = $id;
-        $logs = TaskLog::with('Task')->whereHas('Task', function ($query) use ($project_id) {
+        $logs = TaskLog::with(['Task', 'Task.Project', 'Task.Project.User', 'TaskType'])->whereHas('Task', function ($query) use ($project_id) {
             $query->where('project_id', $project_id);
-        })->get();
+        })->orderBy('created_at', 'desc')->get();
         return $logs;
     }
 
