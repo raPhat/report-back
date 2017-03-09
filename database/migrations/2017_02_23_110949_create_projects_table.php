@@ -21,9 +21,12 @@ class CreateProjectsTable extends Migration
             $table->unsignedInteger('image_id')->nullable()->foreign()
             ->references('id')->on('images')
             ->onDelete('cascade');
+            $table->unsignedInteger('user_id')->foreign()
+                ->references('id')->on('users')
+                ->onDelete('cascade');
             $table->timestamps();
         });
-        $project = ['name' => '1st Project', 'description' => 'Yeahhh!'];
+        $project = ['name' => '1st Project', 'description' => 'Yeahhh!', 'user_id' => 1];
         $db = DB::table('projects')->insert($project);
     }
 

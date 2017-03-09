@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreTaskPost;
-use App\Task;
-use App\TaskLog;
+use App\Models\Task;
+use App\Models\TaskLog;
 
 class TaskController extends Controller
 {

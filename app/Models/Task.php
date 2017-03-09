@@ -1,12 +1,12 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
 class Task extends Model
 {
     public function Type() {
-        return $this->belongsTo('App\TaskType', 'task_type_id');
+        return $this->belongsTo('App\Models\TaskType', 'task_type_id');
     }
 }
