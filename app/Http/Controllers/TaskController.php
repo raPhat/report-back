@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\TaskService;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreTaskPost;
 use App\Models\Task;
@@ -9,6 +10,13 @@ use App\Models\TaskLog;
 
 class TaskController extends Controller
 {
+    private $taskService;
+
+    function __construct(TaskService $taskService)
+    {
+        $this->taskService = $taskService;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -31,62 +39,29 @@ class TaskController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param StoreTaskPost|Request $request
      * @return \Illuminate\Http\Response
      */
     public function store(StoreTaskPost $request)
     {
-        $task = new Task();
-        $task->name = $request->name;
-        $task->description = $request->description;
-        $task->start = date('Y-m-d', $request->start['epoc']);
-        $task->project_id = $request->project_id;
-        $task->save();
-
-        $log = new TaskLog();
-        $log->task_id = $task->id;
-        $log->start = date('Y-m-d', $request->start['epoc']);
-        $log->save();
-
+        $task = $this->taskService->store($request);
         return response()->json($task);
     }
 
     public function getTasksByProject($id) {
-        $tasks = Task::with(['Type'])->where('project_id', $id)->get();
+        $tasks = $this->taskService->getTasksByProjectID($id);
         return response()->json($tasks);
     }
 
+    public function getTaskLogsByMe(Request $request) {
+        $me = $request->user();
+        $user = ($me['role'] == 'student') ? $me['users']: $me['students'];
+        $logs = $this->taskService->getTaskLogsByUsers($user);
+        return response()->json($logs);
+    }
+
     public function changeTo(Request $request, $id) {
-        $task = Task::findOrFail($id);
-
-        $log = new TaskLog();
-        $log->task_id = $task->id;
-        $log->start = date('Y-m-d', $request->start['epoc']);
-
-        switch ($request->type) {
-            case 'ToDo':
-                $task->task_type_id = 1;
-                $task->start = date('Y-m-d', $request->start['epoc']);
-                $log->task_type_id = 1;
-                TaskLog::where('task_id', '=', $task->id)->delete();
-                break;
-
-            case 'Doing':
-                $task->task_type_id = 2;
-                $log->task_type_id = 2;
-                TaskLog::where('task_id', '=', $task->id)->where('task_type_id', '>', 1)->delete();
-                break;
-
-            case 'Done':
-                $task->task_type_id = 3;
-                $log->task_type_id = 3;
-                TaskLog::where('task_id', '=', $task->id)->where('task_type_id', '>', 2)->delete();
-                break;
-        }
-
-        $log->save();
-        $task->save();
-
+        $task = $this->taskService->changeTo($request, $id);
         return response()->json($task);
     }
 
@@ -115,8 +90,8 @@ class TaskController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param StoreTaskPost|Request $request
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function update(StoreTaskPost $request, $id)

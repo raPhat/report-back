@@ -13,4 +13,8 @@ class Task extends Model
     public function Project() {
         return $this->belongsTo('App\Models\Project');
     }
+
+    public function Comments() {
+        return $this->hasMany('App\Models\Comment');
+    }
 }
