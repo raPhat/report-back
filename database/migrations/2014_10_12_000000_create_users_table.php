@@ -18,6 +18,7 @@ class CreateUsersTable extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
+            $table->text('description');
             $table->string('role');
             $table->string('code')->nullable();
             $table->rememberToken();
@@ -26,33 +27,41 @@ class CreateUsersTable extends Migration
 
         Schema::create('students_has_users', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('student_id');
-            $table->integer('user_id');
+            $table->unsignedInteger('student_id')->foreign()
+                ->references('id')->on('users')
+                ->onDelete('cascade');
+            $table->unsignedInteger('user_id')->foreign()
+                ->references('id')->on('users')
+                ->onDelete('cascade');
             $table->timestamps();
         });
 
         $student = [
             'name' => 'Veerapat In-ongkarn',
+            'description' => 'Junior Frontend Developer',
             'email' => 'karjkeng@hotmail.com',
             'password' => bcrypt('karjkeng'),
             'role' => 'student'
         ];
         $mentor = [
-            'name' => 'mentor',
+            'name' => 'Juan Welch',
+            'description' => 'hmmmm',
             'email' => 'mentor@hotmail.com',
-            'password' => bcrypt('karjkeng'),
+            'password' => bcrypt('123456'),
             'role' => 'mentor',
             'code' => '12345'
         ];
         $mentor2 = [
-            'name' => 'mentor2',
+            'name' => 'Russell Alvarez',
+            'description' => 'super mentor',
             'email' => 'mentor2@hotmail.com',
             'password' => bcrypt('karjkeng'),
             'role' => 'mentor',
             'code' => '23456'
         ];
         $super = [
-            'name' => 'super',
+            'name' => 'Eugene Gomez',
+            'description' => 'super supervisor',
             'email' => 'super@hotmail.com',
             'password' => bcrypt('karjkeng'),
             'role' => 'supervisor',

@@ -15,7 +15,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'role'
+        'name', 'email', 'password', 'role', 'description'
     ];
 
     /**
@@ -29,7 +29,7 @@ class User extends Authenticatable
 
     public function Users()
     {
-        return $this->belongsToMany('App\Models\User', 'students_has_users', 'student_id');
+        return $this->belongsToMany('App\Models\User', 'students_has_users', 'student_id', 'user_id');
     }
 
     public function Mentors()
@@ -44,6 +44,6 @@ class User extends Authenticatable
 
     public function Students()
     {
-        return $this->belongsToMany('App\Models\User', 'students_has_users', 'user_id');
+        return $this->belongsToMany('App\Models\User', 'students_has_users', 'user_id', 'student_id');
     }
 }

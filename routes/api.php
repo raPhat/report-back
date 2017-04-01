@@ -21,19 +21,28 @@ Route::group(['middleware' => 'cors'], function () {
     Route::group(['middleware' => 'jwt.auth'], function () {
         // projects
         Route::get('projects/myProject', 'ProjectController@myProject');
-        Route::resource('projects', 'ProjectController');
+        Route::get('projects/user/{id}', 'ProjectController@getProjectsByUserID');
         Route::get('projects/logs/{id}', 'ProjectController@logs');
+        Route::resource('projects', 'ProjectController');
         // tasks
-        Route::resource('tasks', 'TaskController');
         Route::get('tasks/project/{id}', 'TaskController@getTasksByProject');
         Route::put('tasks/change/{id}', 'TaskController@changeTo');
+        Route::get('tasks/logs/me', 'TaskController@getTaskLogsByMe');
+        Route::resource('tasks', 'TaskController');
+        // comments
+        Route::get('comments/task/{id}', 'CommentController@getCommentsByTask');
+        Route::post('comments', 'CommentController@comment');
         // users
         Route::get('users/code/{id}', 'UserController@getUserByCode');
         Route::post('users/code', 'UserController@setUserOfStudent');
         Route::delete('users/code/{id}', 'UserController@deleteUserOfStudent');
+        Route::get('users/statistic/{id}', 'UserController@getStatisticByUserID');
+        Route::resource('users', 'UserController');
     });
 });
 
 Route::post('auth', 'Api\AuthController@authenticate');
 Route::get('auth/me', 'Api\AuthController@getAuthenticatedUser');
 Route::post('auth/register', 'Api\AuthController@register');
+
+Route::get('test', 'CommentController@test');

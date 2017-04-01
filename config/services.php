@@ -35,4 +35,12 @@ return [
         'secret' => env('STRIPE_SECRET'),
     ],
 
+    'firebase' => [
+        'api_key' => 'AIzaSyAHnJISxPvaXKeTS_FPIFGiHg59LCyjhE0', // Only used for JS integration
+        'auth_domain' => 'report-ed54c.firebaseapp.com', // Only used for JS integration
+        'database_url' => 'https://report-ed54c.firebaseio.com',
+        'secret' => 'z6UXBuLPyrI9phRDbzOwGdrAirtWwpTqdHjRfkEi',
+        'storage_bucket' => 'report-ed54c.appspot.com', // Only used for JS integration
+    ]
+
 ];

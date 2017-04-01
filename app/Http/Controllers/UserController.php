@@ -14,9 +14,22 @@ class UserController extends Controller
         $this->userService = $userService;
     }
 
+    function show($id) {
+        return $this->userService->getUserById($id);
+    }
+
+    function update(Request $request, $id) {
+        return $this->userService->update($request, $id);
+    }
+
     function getUserByCode($code) {
         $user = $this->userService->getUserByCode($code);
         return response()->json($user);
+    }
+
+    function getStatisticByUserID($id) {
+        $statistic = $this->userService->getStatisticByUserID($id);
+        return response()->json($statistic);
     }
 
     function setUserOfStudent(Request $request) {

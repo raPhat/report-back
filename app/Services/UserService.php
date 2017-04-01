@@ -8,6 +8,7 @@
 
 namespace App\Services;
 
+use App\Models\TaskLog;
 use App\Models\User;
 
 class UserService
@@ -17,11 +18,35 @@ class UserService
      */
     private $model;
 
+    private $projectService;
+    private $taskService;
+
     function __construct(
-        User $user
+        User $user,
+        ProjectService $projectService,
+        TaskService $taskService
     )
     {
         $this->model = $user;
+        $this->projectService = $projectService;
+        $this->taskService = $taskService;
+    }
+
+    function getUserById($id) {
+        return $this->model->with(['Users', 'Students', 'Mentors', 'Supervisors'])->where('id', $id)->first();
+    }
+
+    function getMyStatistic($userId) {
+        return $this->getStatisticByUserID($userId);
+    }
+
+    function getStatisticByUserID($id) {
+        $statistic = [
+            'total_projects' => count($this->projectService->getProjectsByUserID($id)),
+            'total_tasks' => count($this->taskService->getTasksByUserID($id)),
+            'total_days' => 0
+        ];
+        return $statistic;
     }
 
     function getUserByCode($code) {
@@ -99,10 +124,21 @@ class UserService
         return $user->with(['Users', 'Students', 'Mentors', 'Supervisors']);
     }
 
+    function update($data, $id) {
+        $user = $this->model->find($id);
+        $this->setDetail($user, $data);
+        $user->save();
+
+        return $user;
+    }
+
     private function setDetail($user, $data) {
         $user->name = $data['name'];
+        $user->description = $data['description'];
         $user->email = $data['email'];
-        $user->password = bcrypt($data['password']);
+        if( !empty($data['password']) ) {
+            $user->password = bcrypt($data['password']);
+        }
     }
 
     private function hashCode($id) {
