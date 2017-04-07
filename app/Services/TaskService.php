@@ -10,8 +10,10 @@ namespace App\Services;
 
 
 use App\Http\Requests\StoreTaskPost;
+use App\Models\Notify;
 use App\Models\Task;
 use App\Models\TaskLog;
+use App\Models\User;
 
 class TaskService
 {
@@ -47,7 +49,31 @@ class TaskService
         $log->start = date('Y-m-d', $request->start['epoc']);
         $log->save();
 
+        return $this->getTaskByTaskID($task->id);
+    }
+
+    function update(StoreTaskPost $request, $id) {
+        $task = $this->getTaskByTaskID($id);
+        $task->name = $request->name;
+        $task->description = rawurldecode($request->description);
+        $task->save();
+
         return $task;
+    }
+
+    function getTaskLogsByProjectIdAndDates($pid, $start, $end) {
+        $logs = TaskLog::with(['Task', 'Task.Comments', 'Task.Project', 'Task.Project.User', 'TaskType'])
+            ->whereHas('Task.Project', function ($query) use ($pid) {
+                $query->where('id', $pid);
+            })
+            ->whereHas('Task', function ($query) use ($start, $end) {
+                $startTime = strtotime($start);
+                $endTime = strtotime($end);
+                $startDate = date('Y-m-d', $startTime);
+                $endDate = date('Y-m-d', $endTime);
+                $query->whereBetween('start', [$startDate, $endDate]);
+            })->get();
+        return $logs;
     }
 
     function getTaskLogsByUsers($users) {
@@ -75,6 +101,11 @@ class TaskService
         return $tasks;
     }
 
+    function getTaskByTaskID($id) {
+        $task = $this->model->with(['Type', 'Project'])->where('id', $id)->first();
+        return $task;
+    }
+
     function getTasksByUserID($id) {
 
         $tasks = $this->model->with(['Type', 'Project'])->whereHas('Project', function ($query) use ($id) {
@@ -85,7 +116,7 @@ class TaskService
     }
 
     function changeTo($request, $id) {
-        $task = $this->model->findOrFail($id);
+        $task = $this->getTaskByTaskID($id);
 
         $log = new TaskLog();
         $log->task_id = $task->id;
@@ -115,7 +146,34 @@ class TaskService
         $log->save();
         $task->save();
 
+        $notify = new Notify();
+        $notify->obj_id = $log->id;
+        $notify->type = 'TASK';
+        $notify->save();
+
+        $user = $request->user();
+        $user = $this->getUserById($user->id)->toArray();
+
+        $mentors = [];
+        foreach($user['mentors'] as $mentor) {
+            $mentors[] = $mentor['id'];
+        }
+        $supervisors = [];
+        foreach($user['supervisors'] as $supervisor) {
+            $supervisors[] = $supervisor['id'];
+        }
+
+        $notify->Users()->sync(array_merge($mentors, $supervisors));
+        $notify->save();
+
+
+        $task['notify_ids'] = array_merge($mentors, $supervisors);
+
         return $task;
+    }
+
+    function getUserById($id) {
+        return User::with(['Users', 'Students', 'Mentors', 'Supervisors'])->where('id', $id)->first();
     }
 
 }

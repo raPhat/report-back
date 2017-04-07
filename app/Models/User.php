@@ -46,4 +46,8 @@ class User extends Authenticatable
     {
         return $this->belongsToMany('App\Models\User', 'students_has_users', 'user_id', 'student_id');
     }
+
+    function Notifies() {
+        return $this->belongsToMany('App\Models\Notify', 'users_has_notifies', 'user_id', 'notify_id');
+    }
 }
