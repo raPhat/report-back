@@ -17,7 +17,10 @@ use Illuminate\Http\Request;
 //    return $request->user();
 //})->middleware('jwt.auth');
 
+Route::post('images', 'GeneralController@upload');
+
 Route::group(['middleware' => 'cors'], function () {
+
     Route::group(['middleware' => 'jwt.auth'], function () {
         // projects
         Route::get('projects/myProject', 'ProjectController@myProject');
@@ -27,6 +30,7 @@ Route::group(['middleware' => 'cors'], function () {
         // tasks
         Route::get('tasks/project/{id}', 'TaskController@getTasksByProject');
         Route::put('tasks/change/{id}', 'TaskController@changeTo');
+        Route::get('tasks/logs', 'TaskController@getTaskLogsByMeId');
         Route::get('tasks/logs/me', 'TaskController@getTaskLogsByMe');
         Route::resource('tasks', 'TaskController');
         // comments
@@ -35,6 +39,8 @@ Route::group(['middleware' => 'cors'], function () {
         // users
         Route::get('users/code/{id}', 'UserController@getUserByCode');
         Route::post('users/code', 'UserController@setUserOfStudent');
+        Route::get('users/reports', 'UserController@getMyReports');
+        Route::get('auth/notifies', 'UserController@getNotifiesByUserId');
         Route::delete('users/code/{id}', 'UserController@deleteUserOfStudent');
         Route::get('users/statistic/{id}', 'UserController@getStatisticByUserID');
         Route::resource('users', 'UserController');

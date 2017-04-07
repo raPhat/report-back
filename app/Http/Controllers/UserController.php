@@ -22,6 +22,13 @@ class UserController extends Controller
         return $this->userService->update($request, $id);
     }
 
+    function getMyReports(Request $request) {
+        $user = $request->user();
+        $dates = json_decode($request['dates']);
+        $reports = $this->userService->getReportsByUserId($user->id, $dates);
+        return response()->json($reports);
+    }
+
     function getUserByCode($code) {
         $user = $this->userService->getUserByCode($code);
         return response()->json($user);
@@ -37,6 +44,12 @@ class UserController extends Controller
         $user = $request->user;
         $response = $this->userService->setUserOfStudent($user['id'], $me->id);
         return response()->json($response->first());
+    }
+
+    function getNotifiesByUserId(Request $request) {
+        $me = $request->user();
+        $notifies = $this->userService->getNotifiesByUserId($me->id);
+        return response()->json($notifies);
     }
 
     function deleteUserOfStudent(Request $request, $id) {

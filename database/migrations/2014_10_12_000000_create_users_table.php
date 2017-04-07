@@ -15,10 +15,16 @@ class CreateUsersTable extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name');
+            $table->string('first_name');
+            $table->string('last_name');
             $table->string('email')->unique();
             $table->string('password');
             $table->text('description');
+            $table->text('company')->nullable();
+            $table->text('position')->nullable();
+            $table->text('avatar')->nullable();
+            $table->text('sign')->nullable();
+            $table->text('start')->nullable();
             $table->string('role');
             $table->string('code')->nullable();
             $table->rememberToken();
@@ -37,14 +43,19 @@ class CreateUsersTable extends Migration
         });
 
         $student = [
-            'name' => 'Veerapat In-ongkarn',
-            'description' => 'Junior Frontend Developer',
+            'first_name' => 'Veerapat',
+            'last_name' => 'In-ongkarn',
+            'description' => 'Hi!....',
+            'company' => 'Buzzwoo!',
+            'position' => 'Junior Frontend Developer',
             'email' => 'karjkeng@hotmail.com',
             'password' => bcrypt('karjkeng'),
+            'start' => '09/03/2016',
             'role' => 'student'
         ];
         $mentor = [
-            'name' => 'Juan Welch',
+            'first_name' => 'Juan',
+            'last_name' => 'Welch',
             'description' => 'hmmmm',
             'email' => 'mentor@hotmail.com',
             'password' => bcrypt('123456'),
@@ -52,7 +63,8 @@ class CreateUsersTable extends Migration
             'code' => '12345'
         ];
         $mentor2 = [
-            'name' => 'Russell Alvarez',
+            'first_name' => 'Russell',
+            'last_name' => 'Alvarez',
             'description' => 'super mentor',
             'email' => 'mentor2@hotmail.com',
             'password' => bcrypt('karjkeng'),
@@ -60,7 +72,8 @@ class CreateUsersTable extends Migration
             'code' => '23456'
         ];
         $super = [
-            'name' => 'Eugene Gomez',
+            'first_name' => 'Eugene',
+            'last_name' => 'Gomez',
             'description' => 'super supervisor',
             'email' => 'super@hotmail.com',
             'password' => bcrypt('karjkeng'),

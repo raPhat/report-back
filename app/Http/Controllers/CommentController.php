@@ -17,13 +17,7 @@ class CommentController extends Controller
         $this->commentService = $commentService;
     }
 
-    function test() {
-        $cm = new Comment();
-        $cm->firebase();
-        return response()->json($cm);
-    }
-
-    function getCommentsByTask($id) {
+    public function getCommentsByTask($id) {
         $comments = $this->commentService->getCommentsByTask($id);
         return response()->json($comments);
     }

@@ -8,6 +8,7 @@
 
 namespace App\Services;
 
+use App\Models\Notify;
 use Kreait\Firebase\Configuration;
 use Kreait\Firebase\Firebase;
 use App\Models\Comment;
@@ -36,36 +37,42 @@ class CommentService
     }
 
     function getCommentsByTask($id) {
-        $task = $this->taskModel->with(['Comments'])->where('id', $id)->first();
-        return $task['comments'];
+        $task = $this->taskModel->with(['Comments', 'Comments.User'])->where('id', $id)->first();
+        return $task;
     }
 
     function comment($request) {
         $user = $request->user();
         $comment = new Comment();
-        $comment->text = $request['text'];
+        $comment->text = rawurldecode($request['text']);
         $comment->user_id = $user->id;
         $comment->task_id = $request['task_id'];
 
         $comment->save();
 
-        $this->firebase($comment);
-
-        return $comment;
-    }
-
-    function firebase($comment) {
-        $config = new Configuration();
-        $config->setFirebaseSecret('F3IJ8GB83vjopCpZ0o8PHAfanfItNeWkgqEnfPNw');
-        $firebase = new Firebase('https://report-ed54c.firebaseio.com', $config);
-
+//        $this->firebase($comment);
         $task = $this->taskModel->with(['Comments', 'Project'])->where('id', $comment->task_id)->first();
+        $comment['task'] = $task;
+
+        $ids = [];
         foreach($task['comments'] as $cm) {
             if($cm['user_id'] != $task['user_id']) {
-                $firebase->set(['comment' => $comment->id], 'user/' . $cm['user_id']);
+                $ids[] = $cm['user_id'];
             }
         }
-        $firebase->set(['comment' => $comment->id], 'user/' . $task['Project']['user_id']);
+        $ids[] = $task['Project']['user_id'];
+
+        $notify = new Notify();
+        $notify->obj_id = $comment->id;
+        $notify->type = 'COMMENT';
+        $notify->save();
+
+        $notify->Users()->sync($ids);
+        $notify->save();
+
+        $comment['notify_ids'] = $ids;
+
+        return $comment;
     }
 
     function destroy($id) {

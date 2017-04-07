@@ -10,6 +10,7 @@ namespace App\Services;
 
 use App\Models\TaskLog;
 use App\Models\User;
+use App\Models\Notify;
 
 class UserService
 {
@@ -17,23 +18,48 @@ class UserService
      * @var \App\Models\User
      */
     private $model;
+    private $notify;
 
     private $projectService;
     private $taskService;
 
     function __construct(
         User $user,
+        Notify $notify,
         ProjectService $projectService,
         TaskService $taskService
     )
     {
         $this->model = $user;
+        $this->notify = $notify;
         $this->projectService = $projectService;
         $this->taskService = $taskService;
     }
 
     function getUserById($id) {
         return $this->model->with(['Users', 'Students', 'Mentors', 'Supervisors'])->where('id', $id)->first();
+    }
+
+    function getNotifiesByUserId($id) {
+        $user = $this->model->with([
+            'Notifies',
+            'Notifies.Comment',
+            'Notifies.Comment.Task',
+            'Notifies.Comment.Task.Project',
+            'Notifies.Comment.User',
+            'Notifies.TaskLog',
+            'Notifies.TaskLog.Task',
+            'Notifies.TaskLog.Task.Project',
+            'Notifies.TaskLog.Task.Project.User',
+            'Notifies.TaskLog.TaskType'
+        ])->where('id', $id)->first()->toArray();
+        $notifies = [];
+        foreach ($user['notifies'] as $notify) {
+            if( !is_null($notify['comment']) || !is_null($notify['task_log']) ) {
+                $notifies[] = $notify;
+            }
+        }
+        return $notifies;
     }
 
     function getMyStatistic($userId) {
@@ -132,12 +158,42 @@ class UserService
         return $user;
     }
 
+    function getReportsByUserId($id, $dates) {
+
+        $projects = $this->projectService->getMyProjectsByUserID($id);
+
+        foreach ($projects as $project) {
+            $reports = [];
+            foreach ($dates as $date) {
+                $logs = $this->taskService->getTaskLogsByProjectIdAndDates($project['id'], $date->start, $date->end);
+                $reports[] = [
+                    'logs' => $logs,
+                    'start' => $date->start,
+                    'end' => $date->end,
+                ];
+            }
+            $project['reports'] = $reports;
+        }
+
+        return $projects;
+    }
+
     private function setDetail($user, $data) {
-        $user->name = $data['name'];
+        $user->first_name = $data['first_name'];
+        $user->last_name = $data['last_name'];
         $user->description = $data['description'];
         $user->email = $data['email'];
+        $user->company = $data['company'];
+        $user->position = $data['position'];
+        $user->start = $data['start'];
         if( !empty($data['password']) ) {
             $user->password = bcrypt($data['password']);
+        }
+        if( !empty($data['avatar']) ) {
+            $user->avatar = $data['avatar'];
+        }
+        if( !empty($data['sign']) ) {
+            $user->sign = $data['sign'];
         }
     }
 

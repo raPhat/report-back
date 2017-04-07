@@ -60,6 +60,12 @@ class TaskController extends Controller
         return response()->json($logs);
     }
 
+    public function getTaskLogsByMeId(Request $request) {
+        $me = $request->user();
+        $logs = $this->taskService->getLogsByUserID($me->id);
+        return response()->json($logs);
+    }
+
     public function changeTo(Request $request, $id) {
         $task = $this->taskService->changeTo($request, $id);
         return response()->json($task);
@@ -96,7 +102,8 @@ class TaskController extends Controller
      */
     public function update(StoreTaskPost $request, $id)
     {
-        //
+        $task = $this->taskService->update($request, $id);
+        return response()->json($task);
     }
 
     /**
