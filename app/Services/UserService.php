@@ -185,7 +185,7 @@ class UserService
         $user->email = $data['email'];
         $user->company = $data['company'];
         $user->position = $data['position'];
-        $user->start = $data['start'];
+        $user->start = date('Y-m-d', $data['start']['epoc']);
         if( !empty($data['password']) ) {
             $user->password = bcrypt($data['password']);
         }
