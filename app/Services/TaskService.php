@@ -62,7 +62,7 @@ class TaskService
     }
 
     function getTaskLogsByProjectIdAndDates($pid, $start, $end) {
-        $logs = TaskLog::with(['Task', 'Task.Comments', 'Task.Project', 'Task.Project.User', 'TaskType'])
+        $logs = TaskLog::with(['Task', 'Task.Comments', 'Task.Comments.User', 'Task.Project', 'Task.Project.User', 'TaskType'])
             ->whereHas('Task.Project', function ($query) use ($pid) {
                 $query->where('id', $pid);
             })
