@@ -147,7 +147,7 @@ class UserService
     }
 
     function withFull($user) {
-        return $user->with(['Users', 'Students', 'Mentors', 'Supervisors']);
+        return $user->with(['Users', 'Students', 'Mentors', 'Supervisors'])->where('id', $user->id);
     }
 
     function update($data, $id) {
