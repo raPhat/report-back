@@ -32,6 +32,7 @@ Route::group(['middleware' => 'cors'], function () {
         Route::put('tasks/change/{id}', 'TaskController@changeTo');
         Route::get('tasks/logs', 'TaskController@getTaskLogsByMeId');
         Route::get('tasks/logs/me', 'TaskController@getTaskLogsByMe');
+        Route::get('tasks/logs/{id}', 'TaskController@getTaskLogsByUserId');
         Route::resource('tasks', 'TaskController');
         // comments
         Route::get('comments/task/{id}', 'CommentController@getCommentsByTask');
