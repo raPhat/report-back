@@ -66,6 +66,11 @@ class TaskController extends Controller
         return response()->json($logs);
     }
 
+    public function getTaskLogsByUserId($id) {
+        $logs = $this->taskService->getLogsByUserID($id);
+        return response()->json($logs);
+    }
+
     public function changeTo(Request $request, $id) {
         $task = $this->taskService->changeTo($request, $id);
         return response()->json($task);
