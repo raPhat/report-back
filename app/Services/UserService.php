@@ -138,7 +138,7 @@ class UserService
     function createMentor($data) {
         $mentor = new User();
         $this->setDetail($mentor, $data);
-        $mentor->role = 'supervisor';
+        $mentor->role = 'mentor';
         $mentor->save();
 
         $mentor->code = $this->hashCode($mentor->id);
