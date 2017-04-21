@@ -37,6 +37,7 @@ Route::group(['middleware' => 'cors'], function () {
         // comments
         Route::get('comments/task/{id}', 'CommentController@getCommentsByTask');
         Route::post('comments', 'CommentController@comment');
+        Route::delete('comments/{id}', 'CommentController@destroy');
         // users
         Route::get('users/code/{id}', 'UserController@getUserByCode');
         Route::post('users/code', 'UserController@setUserOfStudent');
@@ -50,6 +51,6 @@ Route::group(['middleware' => 'cors'], function () {
 
 Route::post('auth', 'Api\AuthController@authenticate');
 Route::get('auth/me', 'Api\AuthController@getAuthenticatedUser');
-Route::post('auth/register', 'Api\AuthController@register');
-
-Route::get('test', 'CommentController@test');
+//Route::post('auth/register', 'Api\AuthController@register');
+//
+//Route::get('test', 'CommentController@test');

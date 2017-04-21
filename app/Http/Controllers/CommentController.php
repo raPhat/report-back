@@ -26,4 +26,9 @@ class CommentController extends Controller
         $comment = $this->commentService->comment($request);
         return response()->json($comment);
     }
+
+    function destroy($id) {
+        $comment = $this->commentService->destroy($id);
+        return response()->json($comment);
+    }
 }
