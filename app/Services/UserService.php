@@ -220,8 +220,8 @@ class UserService
         })->orderBy('created_at', 'desc')->get();
 
         return [
-            'projects' => count($projects),
-            'tasks' => count($tasks)
+            'total_projects' => count($projects),
+            'total_tasks' => count($tasks)
         ];
     }
 }
