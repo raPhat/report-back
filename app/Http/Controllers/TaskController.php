@@ -120,6 +120,12 @@ class TaskController extends Controller
     public function destroy($id)
     {
         $task = Task::destroy($id);
+        Notify::whereHas('TaskLog.Task', function ($query) use ($id) {
+            $query->where('id', $id);
+        })->where('type', 'TASK')->delete();
+        TaskLog::whereHas('Task', function ($query) use ($id) {
+            $query->where('id', $id);
+        })->delete();
         return response()->json($task);
     }
 }

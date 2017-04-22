@@ -77,6 +77,7 @@ class CommentService
 
     function destroy($id) {
         $comment = $this->model->destroy($id);
+        Notify::where('obj_id', $id)->where('type', 'COMMENT')->delete();
         return $comment;
     }
 
