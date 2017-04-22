@@ -8,6 +8,8 @@
 
 namespace App\Services;
 
+use App\Models\Project;
+use App\Models\Task;
 use App\Models\TaskLog;
 use App\Models\User;
 use App\Models\Notify;
@@ -201,5 +203,25 @@ class UserService
 
     private function hashCode($id) {
         return substr(md5($id), 0, 5);
+    }
+
+    function getStatisticByUsers($users) {
+        $ids = [];
+        foreach ($users as $user) {
+            $ids[] = $user->id;
+        }
+
+        $projects = Project::whereHas('User', function ($query) use ($ids) {
+            $query->whereIn('user_id', $ids);
+        })->orderBy('created_at', 'desc')->get();
+
+        $tasks = Task::whereHas('User', function ($query) use ($ids) {
+            $query->whereIn('user_id', $ids);
+        })->orderBy('created_at', 'desc')->get();
+
+        return [
+            'projects' => count($projects),
+            'tasks' => count($tasks)
+        ];
     }
 }
