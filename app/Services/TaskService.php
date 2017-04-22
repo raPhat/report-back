@@ -127,18 +127,34 @@ class TaskService
                 $task->task_type_id = 1;
                 $task->start = date('Y-m-d', $request->start['epoc']);
                 $log->task_type_id = 1;
+                $taskId = $task->id;
+                Notify::whereHas('TaskLog.Task', function ($query) use ($taskId) {
+                    $query->where('id', $taskId);
+                })->where('type', 'TASK')->delete();
                 $this->model_log->where('task_id', '=', $task->id)->delete();
                 break;
 
             case 'Doing':
                 $task->task_type_id = 2;
                 $log->task_type_id = 2;
+                $taskId = $task->id;
+                Notify::whereHas('TaskLog.Task', function ($query) use ($taskId) {
+                    $query->where('id', $taskId);
+                })->whereHas('TaskLog', function ($query) use ($taskId) {
+                    $query->where('task_type_id', '>', 1);
+                })->delete();
                 $this->model_log->where('task_id', '=', $task->id)->where('task_type_id', '>', 1)->delete();
                 break;
 
             case 'Done':
                 $task->task_type_id = 3;
                 $log->task_type_id = 3;
+                $taskId = $task->id;
+                Notify::whereHas('TaskLog.Task', function ($query) use ($taskId) {
+                    $query->where('id', $taskId);
+                })->whereHas('TaskLog', function ($query) use ($taskId) {
+                    $query->where('task_type_id', '>', 2);
+                })->delete();
                 $this->model_log->where('task_id', '=', $task->id)->where('task_type_id', '>', 2)->delete();
                 break;
         }
