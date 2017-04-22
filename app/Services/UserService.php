@@ -215,7 +215,7 @@ class UserService
             $query->whereIn('user_id', $ids);
         })->orderBy('created_at', 'desc')->get();
 
-        $tasks = Task::whereHas('User', function ($query) use ($ids) {
+        $tasks = Task::whereHas('Project.User', function ($query) use ($ids) {
             $query->whereIn('user_id', $ids);
         })->orderBy('created_at', 'desc')->get();
 
