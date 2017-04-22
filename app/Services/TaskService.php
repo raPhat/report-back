@@ -11,6 +11,7 @@ namespace App\Services;
 
 use App\Http\Requests\StoreTaskPost;
 use App\Models\Notify;
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\TaskLog;
 use App\Models\User;

@@ -42,6 +42,7 @@ Route::group(['middleware' => 'cors'], function () {
         Route::get('users/code/{id}', 'UserController@getUserByCode');
         Route::post('users/code', 'UserController@setUserOfStudent');
         Route::get('users/reports', 'UserController@getMyReports');
+        Route::get('users/statistic', 'UserController@getStatistic');
         Route::get('auth/notifies', 'UserController@getNotifiesByUserId');
         Route::delete('users/code/{id}', 'UserController@deleteUserOfStudent');
         Route::get('users/statistic/{id}', 'UserController@getStatisticByUserID');

@@ -39,6 +39,13 @@ class UserController extends Controller
         return response()->json($statistic);
     }
 
+    function getStatistic(Request $request) {
+        $me = $request->user();
+        $users = ($me['role'] == 'student') ? $me['users']: $me['students'];
+        $statistic = $this->userService->getStatisticByUsers($users);
+        return response()->json($statistic);
+    }
+
     function setUserOfStudent(Request $request) {
         $me = $request->user();
         $user = $request->user;
