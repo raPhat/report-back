@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCommentPost;
 use App\Models\Comment;
 use App\Services\CommentService;
 use Illuminate\Http\Request;
@@ -22,7 +23,7 @@ class CommentController extends Controller
         return response()->json($comments);
     }
 
-    function comment(Request $request) {
+    function comment(StoreCommentPost $request) {
         $comment = $this->commentService->comment($request);
         return response()->json($comment);
     }

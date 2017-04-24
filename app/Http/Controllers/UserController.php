@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreUserPost;
+use App\Http\Requests\UpdateUserPut;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 
@@ -18,7 +20,7 @@ class UserController extends Controller
         return $this->userService->getUserById($id);
     }
 
-    function update(Request $request, $id) {
+    function update(UpdateUserPut $request, $id) {
         return $this->userService->update($request, $id);
     }
 

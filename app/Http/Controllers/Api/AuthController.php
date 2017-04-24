@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreUserPost;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 use JWTAuth;
@@ -64,7 +65,8 @@ class AuthController extends Controller
         return response()->json($this->userService->getUserById($user->id));
     }
 
-    function register(Request $request) {
+    function register(StoreUserPost $request) {
+
         return $this->userService->create($request);
     }
 }
