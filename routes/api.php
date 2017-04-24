@@ -52,6 +52,6 @@ Route::group(['middleware' => 'cors'], function () {
 
 Route::post('auth', 'Api\AuthController@authenticate');
 Route::get('auth/me', 'Api\AuthController@getAuthenticatedUser');
-//Route::post('auth/register', 'Api\AuthController@register');
+Route::post('auth/register', 'Api\AuthController@register');
 //
 //Route::get('test', 'CommentController@test');
