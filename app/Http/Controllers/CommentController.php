@@ -24,7 +24,8 @@ class CommentController extends Controller
     }
 
     function comment(StoreCommentPost $request) {
-        $comment = $this->commentService->comment($request);
+        $user = $request->user();
+        $comment = $this->commentService->comment($request, $user);
         return response()->json($comment);
     }
 

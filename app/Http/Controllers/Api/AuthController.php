@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LoginPost;
 use App\Http\Requests\StoreUserPost;
 use App\Services\UserService;
 use Illuminate\Http\Request;
@@ -19,7 +20,7 @@ class AuthController extends Controller
         $this->userService = $userService;
     }
 
-    public function authenticate(Request $request)
+    public function authenticate(LoginPost $request)
     {
         // grab credentials from the request
         $credentials = $request->only('email', 'password');

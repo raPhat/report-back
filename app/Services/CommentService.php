@@ -9,6 +9,7 @@
 namespace App\Services;
 
 use App\Models\Notify;
+use App\Models\User;
 use Kreait\Firebase\Configuration;
 use Kreait\Firebase\Firebase;
 use App\Models\Comment;
@@ -41,8 +42,7 @@ class CommentService
         return $task;
     }
 
-    function comment($request) {
-        $user = $request->user();
+    function comment($request, $user) {
         $comment = new Comment();
         $comment->text = rawurldecode($request['text']);
         $comment->user_id = $user->id;
@@ -61,6 +61,13 @@ class CommentService
             }
         }
         $ids[] = $task['Project']['user_id'];
+
+        $me = User::with(['Users'])->where('id', $user->id)->first();
+        foreach ($me->users as $user) {
+            $ids[] = $user['id'];
+        }
+
+        $ids = array_unique($ids);
 
         $notify = new Notify();
         $notify->obj_id = $comment->id;

@@ -294,18 +294,26 @@ class UserServiceTest extends TestCase
             ]
         ]);
         $this->mockTaskService->shouldReceive('getTaskLogsByProjectIdAndDates')->andReturn(new Collection());
-        $mockLog = new MockLog();
-        $actual = $this->repository->getReportsByUserId(1, [$mockLog, $mockLog, $mockLog]);
+        $mockLog = new \App\Models\TaskLog();
+        $mockLog->start = '';
+        $mockLog->end = '';
+        $actual = $this->repository->getReportsByUserId(1, [$mockLog, $mockLog]);
         $this->assertCount(2, $actual);
         $this->assertArrayHasKey('reports' ,$actual[0]);
         $this->assertArrayHasKey('reports' ,$actual[1]);
-        print_r($actual[0]['reports']);
 //        $this->assertArrayHasKey('start' ,$actual[0]['reports'][0]);
 //        $this->assertArrayHasKey('end' ,$actual[0]['reports'][0]);
     }
-}
 
-class MockLog {
-    public $start = '';
-    public $end = '';
+    public function test_get_statistic_by_users()
+    {
+        $user = new \App\Models\User();
+        $user->id = 1;
+        $actual = $this->repository->getStatisticByUsers([
+            $user
+        ]);
+        $this->assertCount(2, $actual);
+        $this->assertArrayHasKey('total_projects' ,$actual);
+        $this->assertArrayHasKey('total_tasks' ,$actual);
+    }
 }

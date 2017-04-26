@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Comment;
 use App\Services\TaskService;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreTaskPost;
 use App\Models\Task;
 use App\Models\TaskLog;
+use App\Models\Notify;
 
 class TaskController extends Controller
 {
@@ -123,7 +125,13 @@ class TaskController extends Controller
         Notify::whereHas('TaskLog.Task', function ($query) use ($id) {
             $query->where('id', $id);
         })->where('type', 'TASK')->delete();
+        Notify::whereHas('Comment.Task', function ($query) use ($id) {
+            $query->where('id', $id);
+        })->where('type', 'COMMENT')->delete();
         TaskLog::whereHas('Task', function ($query) use ($id) {
+            $query->where('id', $id);
+        })->delete();
+        Comment::whereHas('Task', function ($query) use ($id) {
             $query->where('id', $id);
         })->delete();
         return response()->json($task);
