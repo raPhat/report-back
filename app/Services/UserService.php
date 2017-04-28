@@ -43,6 +43,9 @@ class UserService
     }
 
     function getNotifiesByUserId($id) {
+        if(!is_integer($id)) {
+            return false;
+        }
         $user = $this->model->with([
             'Notifies',
             'Notifies.Comment',
@@ -153,6 +156,9 @@ class UserService
     }
 
     function update($data, $id) {
+        if(!is_integer($id)) {
+            return false;
+        }
         $user = $this->model->find($id);
         $this->setDetail($user, $data);
         $user->save();
@@ -211,11 +217,11 @@ class UserService
             $ids[] = $user->id;
         }
 
-        $projects = Project::whereHas('User', function ($query) use ($ids) {
+        $projects = $this->projectService->whereHas('User', function ($query) use ($ids) {
             $query->whereIn('user_id', $ids);
         })->orderBy('created_at', 'desc')->get();
 
-        $tasks = Task::whereHas('Project.User', function ($query) use ($ids) {
+        $tasks = $this->taskService->whereHas('Project.User', function ($query) use ($ids) {
             $query->whereIn('user_id', $ids);
         })->orderBy('created_at', 'desc')->get();
 

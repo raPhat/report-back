@@ -14,10 +14,10 @@ class UserServiceTest extends TestCase
     use DatabaseTransactions;
 
     public $mockStudentData = [
-        'first_name' => '',
-        'last_name' => '',
-        'description' => '',
-        'email' => 'tester@test.com',
+        'first_name' => 'student',
+        'last_name' => 'ja',
+        'description' => 'i\'m student',
+        'email' => 'student@mail.com',
         'company' => '',
         'position' => '',
         'password' => '123456',
@@ -28,10 +28,10 @@ class UserServiceTest extends TestCase
         ]
     ];
     public $mockMentorData = [
-        'first_name' => '',
-        'last_name' => '',
-        'description' => '',
-        'email' => 'mentor@test.com',
+        'first_name' => 'mentor',
+        'last_name' => 'ja',
+        'description' => 'i\'m mentor',
+        'email' => 'mentor@mail.com',
         'company' => '',
         'position' => '',
         'password' => '123456',
@@ -42,10 +42,10 @@ class UserServiceTest extends TestCase
         ]
     ];
     public $mockSupervisorData = [
-        'first_name' => '',
-        'last_name' => '',
-        'description' => '',
-        'email' => 'supervisor@test.com',
+        'first_name' => 'supervisor',
+        'last_name' => 'ja',
+        'description' => 'i\'m supervisor',
+        'email' => 'supervisor@mail.com',
         'company' => '',
         'position' => '',
         'password' => '123456',
@@ -86,14 +86,31 @@ class UserServiceTest extends TestCase
 
     public function test_get_user_by_id()
     {
-        $this->mockUser->shouldReceive('with->where->first')->once()->andReturn(new Collection());
+        $this->mockUser->shouldReceive('with->where')->with('id', 1)->andReturn($this->mockUser);
+        $this->mockUser->shouldReceive('first')->once()->andReturn($this->mockUser);
         $actual = $this->repository->getUserById(1);
-        $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $actual);
+        $this->assertInstanceOf('App\Models\User', $actual);
+
+        $this->mockUser->shouldReceive('with->where')->with('id', 99)->andReturn($this->mockUser);
+        $this->mockUser->shouldReceive('first')->once()->andReturnNull();
+        $actual = $this->repository->getUserById(99);
+        $this->assertNull($actual);
+
+        $this->mockUser->shouldReceive('with->where')->with('id', 'string')->andReturn($this->mockUser);
+        $this->mockUser->shouldReceive('first')->once()->andReturnNull();
+        $actual = $this->repository->getUserById('string');
+        $this->assertNull($actual);
+
+        $this->mockUser->shouldReceive('with->where')->with('id', null)->andReturn($this->mockUser);
+        $this->mockUser->shouldReceive('first')->once()->andReturnNull();
+        $actual = $this->repository->getUserById(null);
+        $this->assertNull($actual);
     }
 
     public function test_get_notifies_by_user_id()
     {
-        $this->mockUser->shouldReceive('with->where->first->toArray')->once()->andReturn([
+        $this->mockUser->shouldReceive('with->where')->with('id', 1)->andReturn($this->mockUser);
+        $this->mockUser->shouldReceive('first->toArray')->once()->andReturn([
             'notifies' => [
                 [
                     'comment' => null,
@@ -117,55 +134,159 @@ class UserServiceTest extends TestCase
             ]
         ], $actual);
         $this->assertEquals(2, count($actual));
+
+
+        $this->mockUser->shouldReceive('with->where')->with('id', 99)->andReturn($this->mockUser);
+        $this->mockUser->shouldReceive('first->toArray')->once()->andReturn([
+            'notifies' => []
+        ]);
+        $actual = $this->repository->getNotifiesByUserId(99);
+        $this->assertEquals(0, count($actual));
+
+        $actual = $this->repository->getNotifiesByUserId('string');
+        $this->assertFalse($actual);
+
+        $actual = $this->repository->getNotifiesByUserId(null);
+        $this->assertFalse($actual);
+
     }
 
     public function test_my_statistic()
     {
-//        $this->mockProject->shouldReceive('with->where->get')->once()->andReturn([1, 2, 3]);
-//        $this->mockTask->shouldReceive('with->whereHas->orderBy->get')->once()->andReturn([1, 2]);
-        $this->mockProjectService->shouldReceive('getProjectsByUserID')->once()->andReturn([1, 2, 3]);
-        $this->mockTaskService->shouldReceive('getTasksByUserID')->once()->andReturn([1, 2]);
+        $this->mockProjectService->shouldReceive('getProjectsByUserID')->with(8)->once()->andReturn([2]);
+        $this->mockTaskService->shouldReceive('getTasksByUserID')->with(8)->once()->andReturn([1, 2, 3, 4, 5, 6, 9]);
+        $actual = $this->repository->getMyStatistic(8);
+        $this->assertEquals([
+            'total_projects' => 1,
+            'total_tasks' => 7,
+            'total_days' => 0
+        ], $actual);
+
+        $this->mockProjectService->shouldReceive('getProjectsByUserID')->with(1)->once()->andReturn([1]);
+        $this->mockTaskService->shouldReceive('getTasksByUserID')->with(1)->once()->andReturn([]);
         $actual = $this->repository->getMyStatistic(1);
         $this->assertEquals([
-            'total_projects' => 3,
-            'total_tasks' => 2,
+            'total_projects' => 1,
+            'total_tasks' => 0,
+            'total_days' => 0
+        ], $actual);
+
+        $this->mockProjectService->shouldReceive('getProjectsByUserID')->andReturnNull();
+        $this->mockTaskService->shouldReceive('getTasksByUserID')->andReturnNull();
+        $actual = $this->repository->getMyStatistic(99);
+        $this->assertEquals([
+            'total_projects' => 0,
+            'total_tasks' => 0,
+            'total_days' => 0
+        ], $actual);
+        $actual = $this->repository->getMyStatistic('string');
+        $this->assertEquals([
+            'total_projects' => 0,
+            'total_tasks' => 0,
+            'total_days' => 0
+        ], $actual);
+        $actual = $this->repository->getMyStatistic(null);
+        $this->assertEquals([
+            'total_projects' => 0,
+            'total_tasks' => 0,
             'total_days' => 0
         ], $actual);
     }
 
     public function test_get_statistic_by_user_id()
     {
-//        $this->mockProject->shouldReceive('with->where->get')->once()->andReturn([1, 2, 3]);
-//        $this->mockTask->shouldReceive('with->whereHas->orderBy->get')->once()->andReturn([1, 2]);
-        $this->mockProjectService->shouldReceive('getProjectsByUserID')->once()->andReturn([1, 2, 3]);
-        $this->mockTaskService->shouldReceive('getTasksByUserID')->once()->andReturn([1, 2]);
-        $actual = $this->repository->getStatisticByUserID(1);
+        $this->mockProjectService->shouldReceive('getProjectsByUserID')->with(8)->once()->andReturn([2]);
+        $this->mockTaskService->shouldReceive('getTasksByUserID')->with(8)->once()->andReturn([1, 2, 3, 4, 5, 6, 9]);
+        $actual = $this->repository->getMyStatistic(8);
         $this->assertEquals([
-            'total_projects' => 3,
-            'total_tasks' => 2,
+            'total_projects' => 1,
+            'total_tasks' => 7,
+            'total_days' => 0
+        ], $actual);
+
+        $this->mockProjectService->shouldReceive('getProjectsByUserID')->with(1)->once()->andReturn([1]);
+        $this->mockTaskService->shouldReceive('getTasksByUserID')->with(1)->once()->andReturn([]);
+        $actual = $this->repository->getMyStatistic(1);
+        $this->assertEquals([
+            'total_projects' => 1,
+            'total_tasks' => 0,
+            'total_days' => 0
+        ], $actual);
+
+        $this->mockProjectService->shouldReceive('getProjectsByUserID')->andReturnNull();
+        $this->mockTaskService->shouldReceive('getTasksByUserID')->andReturnNull();
+        $actual = $this->repository->getMyStatistic(99);
+        $this->assertEquals([
+            'total_projects' => 0,
+            'total_tasks' => 0,
+            'total_days' => 0
+        ], $actual);
+        $actual = $this->repository->getMyStatistic('string');
+        $this->assertEquals([
+            'total_projects' => 0,
+            'total_tasks' => 0,
+            'total_days' => 0
+        ], $actual);
+        $actual = $this->repository->getMyStatistic(null);
+        $this->assertEquals([
+            'total_projects' => 0,
+            'total_tasks' => 0,
             'total_days' => 0
         ], $actual);
     }
 
     public function test_get_user_by_code()
     {
-        $this->mockUser->shouldReceive('where->first')->once()->andReturn(new Collection());
+        $this->mockUser->shouldReceive('where')->with('code', '16790')->once()->andReturn($this->mockUser);
+        $this->mockUser->shouldReceive('first')->once()->andReturn($this->mockUser);
+        $actual = $this->repository->getUserByCode('16790');
+        $this->assertInstanceOf('App\Models\User', $actual);
+
+        $this->mockUser->shouldReceive('where')->with('code', '11111')->once()->andReturn($this->mockUser);
+        $this->mockUser->shouldReceive('first')->once()->andReturnNull();
         $actual = $this->repository->getUserByCode('11111');
-        $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $actual);
+        $this->assertNull($actual);
+
+        $this->mockUser->shouldReceive('where')->with('code', null)->once()->andReturn($this->mockUser);
+        $this->mockUser->shouldReceive('first')->once()->andReturnNull();
+        $actual = $this->repository->getUserByCode(null);
+        $this->assertNull($actual);
     }
 
     public function test_get_mentors_by_student_id()
     {
-        $this->mockUser->shouldReceive('find->Mentors')->once()->andReturn(new Collection());
+        $this->mockUser->shouldReceive('find')->with(8)->once()->andReturn($this->mockUser);
+        $this->mockUser->shouldReceive('Mentors')->once()->andReturn([6]);
+        $actual = $this->repository->getMentorsByStudentId(8);
+        $this->assertEquals(1, count($actual));
+
+        $this->mockUser->shouldReceive('find')->with(1)->once()->andReturn($this->mockUser);
+        $this->mockUser->shouldReceive('Mentors')->once()->andReturn([]);
         $actual = $this->repository->getMentorsByStudentId(1);
-        $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $actual);
+        $this->assertEquals(0, count($actual));
+
+        $this->mockUser->shouldReceive('find')->once()->andReturn($this->mockUser);
+        $this->mockUser->shouldReceive('Mentors')->once()->andReturnNull();
+        $actual = $this->repository->getMentorsByStudentId(null);
+        $this->assertNull($actual);
     }
 
     public function test_get_supervisors_by_student_id()
     {
-        $this->mockUser->shouldReceive('find->Supervisors')->once()->andReturn(new Collection());
+        $this->mockUser->shouldReceive('find')->with(8)->once()->andReturn($this->mockUser);
+        $this->mockUser->shouldReceive('Supervisors')->once()->andReturn([7]);
+        $actual = $this->repository->getSupervisorsByStudentId(8);
+        $this->assertEquals(1, count($actual));
+
+        $this->mockUser->shouldReceive('find')->with(1)->once()->andReturn($this->mockUser);
+        $this->mockUser->shouldReceive('Supervisors')->once()->andReturn([]);
         $actual = $this->repository->getSupervisorsByStudentId(1);
-        $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $actual);
+        $this->assertEquals(0, count($actual));
+
+        $this->mockUser->shouldReceive('find')->once()->andReturn($this->mockUser);
+        $this->mockUser->shouldReceive('Supervisors')->once()->andReturnNull();
+        $actual = $this->repository->getSupervisorsByStudentId(null);
+        $this->assertNull($actual);
     }
 
     public function test_set_user_of_student()
@@ -174,9 +295,9 @@ class UserServiceTest extends TestCase
         $this->mockUser->shouldReceive('Users->sync')->once()->andReturn($this->mockUser);
         $this->mockUser->shouldReceive('getAttribute')->once()->andReturn($this->mockUser);
         $this->mockUser->shouldReceive('save')->once()->andReturn($this->mockUser);
-        $this->mockUser->shouldReceive('with->where')->once()->andReturn(new Collection());
-        $actual = $this->repository->setUserOfStudent(1, 2);
-        $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $actual);
+        $this->mockUser->shouldReceive('with->where')->once()->andReturn($this->mockUser);
+        $actual = $this->repository->setUserOfStudent(12, 8);
+        $this->assertInstanceOf('App\Models\User', $actual);
     }
 
     public function test_delete_user_of_student()
@@ -185,9 +306,9 @@ class UserServiceTest extends TestCase
         $this->mockUser->shouldReceive('Users->detach')->once()->andReturn($this->mockUser);
         $this->mockUser->shouldReceive('getAttribute')->once()->andReturn($this->mockUser);
         $this->mockUser->shouldReceive('save')->once()->andReturn($this->mockUser);
-        $this->mockUser->shouldReceive('with->where')->once()->andReturn(new Collection());
-        $actual = $this->repository->deleteUserOfStudent(1, 2);
-        $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $actual);
+        $this->mockUser->shouldReceive('with->where')->once()->andReturn($this->mockUser);
+        $actual = $this->repository->deleteUserOfStudent(12, 8);
+        $this->assertInstanceOf('App\Models\User', $actual);
     }
 
     public function test_create()
@@ -249,22 +370,13 @@ class UserServiceTest extends TestCase
     {
         $this->mockUser->shouldReceive('find')->andReturn($this->mockUser);
         $this->mockUser->shouldReceive('setAttribute')->andReturn($this->mockUser);
-        $this->mockUser->shouldReceive('update')->andReturn(new Collection());
+        $this->mockUser->shouldReceive('update')->andReturn($this->mockUser);
         $this->mock_set_detail();
-        $actual = $this->repository->update($this->mockStudentData, 1);
-//        [
-//            'first_name' => '',
-//            'last_name' => '',
-//            'description' => '',
-//            'email' => 'tester@test.com',
-//            'company' => '',
-//            'position' => '',
-//            'role' => 'student',
-//            'start' => [
-//                'epoc' => 1490227200
-//            ]
-//        ]
+        $actual = $this->repository->update($this->mockStudentData, 8);
         $this->assertInstanceOf('App\Models\User', $actual);
+
+        $actual = $this->repository->update($this->mockStudentData, 'eight');
+        $this->assertFalse($actual);
     }
 
     function mock_set_detail() {
@@ -283,7 +395,7 @@ class UserServiceTest extends TestCase
     // getReportsByUserId
     public function test_get_reports_by_user_id()
     {
-        $this->mockProjectService->shouldReceive('getMyProjectsByUserID')->andReturn([
+        $this->mockProjectService->shouldReceive('getMyProjectsByUserID')->with(1)->andReturn([
             [
                 'id' => 1,
                 'reports' => []
@@ -295,25 +407,30 @@ class UserServiceTest extends TestCase
         ]);
         $this->mockTaskService->shouldReceive('getTaskLogsByProjectIdAndDates')->andReturn(new Collection());
         $mockLog = new \App\Models\TaskLog();
-        $mockLog->start = '';
-        $mockLog->end = '';
-        $actual = $this->repository->getReportsByUserId(1, [$mockLog, $mockLog]);
+        $mockLog->start = '2017-04-13';
+        $mockLog->end = '2017-04-19';
+        $actual = $this->repository->getReportsByUserId(1, array($mockLog, $mockLog));
         $this->assertCount(2, $actual);
         $this->assertArrayHasKey('reports' ,$actual[0]);
         $this->assertArrayHasKey('reports' ,$actual[1]);
-//        $this->assertArrayHasKey('start' ,$actual[0]['reports'][0]);
-//        $this->assertArrayHasKey('end' ,$actual[0]['reports'][0]);
     }
 
     public function test_get_statistic_by_users()
     {
+        $this->mockTaskService->shouldReceive('whereHas->orderBy->get')->once()->andReturn([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        $this->mockProjectService->shouldReceive('whereHas->orderBy->get')->once()->andReturn([2, 3, 4]);
         $user = new \App\Models\User();
-        $user->id = 1;
+        $user->id = 8;
+
+        $user2 = new \App\Models\User();
+        $user2->id = 10;
         $actual = $this->repository->getStatisticByUsers([
-            $user
+            $user, $user2
         ]);
         $this->assertCount(2, $actual);
         $this->assertArrayHasKey('total_projects' ,$actual);
         $this->assertArrayHasKey('total_tasks' ,$actual);
+        $this->assertEquals(3, $actual['total_projects']);
+        $this->assertEquals(9, $actual['total_tasks']);
     }
 }
