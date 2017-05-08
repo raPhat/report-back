@@ -33,16 +33,27 @@ class CommentService
     }
 
     function getComment($id) {
+        if(!is_integer($id)) {
+            return false;
+        }
         $comment = $this->model->with(['Task', 'Task.Comments', 'User'])->where('id', $id)->first();
         return $comment;
     }
 
     function getCommentsByTask($id) {
+        if(!is_integer($id)) {
+            return false;
+        }
         $task = $this->taskModel->with(['Comments', 'Comments.User'])->where('id', $id)->first();
         return $task;
     }
 
     function comment($request, $user) {
+
+        if(!isset($request['text']) || !isset($request['task_id']) || !isset($user)) {
+            return false;
+        }
+
         $comment = new Comment();
         $comment->text = rawurldecode($request['text']);
         $comment->user_id = $user->id;
@@ -65,6 +76,7 @@ class CommentService
         $me = User::with(['Users'])->where('id', $user->id)->first();
         foreach ($me->users as $user) {
             $ids[] = $user['id'];
+            \Illuminate\Support\Facades\Mail::to($user['email'])->send(new \App\Mail\notify());
         }
 
         $ids = array_unique($ids);
@@ -83,6 +95,9 @@ class CommentService
     }
 
     function destroy($id) {
+        if(!is_integer($id)) {
+            return false;
+        }
         $comment = $this->model->destroy($id);
         Notify::where('obj_id', $id)->where('type', 'COMMENT')->delete();
         return $comment;

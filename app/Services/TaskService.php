@@ -27,17 +27,23 @@ class TaskService
      * @var \App\Models\TaskLog
      */
     private $model_log;
+    private $model_user;
 
     function __construct(
         Task $task,
-        TaskLog $log
+        TaskLog $log,
+        User $user
     )
     {
         $this->model = $task;
         $this->model_log = $log;
+        $this->model_user = $user;
     }
 
     function store(StoreTaskPost $request) {
+        if(!isset($request->name) || !isset($request->description) || !isset($request->start) || !isset($request->project_id)) {
+            return false;
+        }
         $task = new Task();
         $task->name = $request->name;
         $task->description = rawurldecode($request->description);
@@ -54,6 +60,9 @@ class TaskService
     }
 
     function update(StoreTaskPost $request, $id) {
+        if(!isset($request->name) || !isset($request->description)) {
+            return false;
+        }
         $task = $this->getTaskByTaskID($id);
         $task->name = $request->name;
         $task->description = rawurldecode($request->description);
@@ -63,7 +72,10 @@ class TaskService
     }
 
     function getTaskLogsByProjectIdAndDates($pid, $start, $end) {
-        $logs = TaskLog::with(['Task', 'Task.Comments', 'Task.Comments.User', 'Task.Project', 'Task.Project.User', 'TaskType'])
+        if(!is_integer($pid) || !is_integer($start) || !is_integer($end)) {
+            return false;
+        }
+        $logs = $this->model_log->with(['Task', 'Task.Comments', 'Task.Comments.User', 'Task.Project', 'Task.Project.User', 'TaskType'])
             ->whereHas('Task.Project', function ($query) use ($pid) {
                 $query->where('id', $pid);
             })
@@ -78,11 +90,14 @@ class TaskService
     }
 
     function getTaskLogsByUsers($users) {
+        if(!is_array($users)) {
+            return false;
+        }
         $ids = [];
         foreach ($users as $user) {
             $ids[] = $user->id;
         }
-        $logs = TaskLog::with(['Task', 'Task.Project', 'Task.Project.User', 'TaskType'])->whereHas('Task.Project.User', function ($query) use ($ids) {
+        $logs = $this->model_log->with(['Task', 'Task.Project', 'Task.Project.User', 'TaskType'])->whereHas('Task.Project.User', function ($query) use ($ids) {
             $query->whereIn('user_id', $ids);
         })->orderBy('created_at', 'desc')->get();
 
@@ -90,7 +105,10 @@ class TaskService
     }
 
     function getLogsByUserID($userId) {
-        $logs = TaskLog::with(['Task', 'Task.Project', 'Task.Project.User', 'TaskType'])->whereHas('Task.Project', function ($query) use ($userId) {
+        if(!is_integer($userId)) {
+            return false;
+        }
+        $logs = $this->model_log->with(['Task', 'Task.Project', 'Task.Project.User', 'TaskType'])->whereHas('Task.Project', function ($query) use ($userId) {
             $query->where('user_id', $userId);
         })->orderBy('created_at', 'desc')->get();
 
@@ -98,17 +116,26 @@ class TaskService
     }
 
     function getTasksByProjectID($id) {
+        if(!is_integer($id)) {
+            return false;
+        }
         $tasks = $this->model->with(['Type', 'Project'])->where('project_id', $id)->get();
         return $tasks;
     }
 
     function getTaskByTaskID($id) {
+        if(!is_integer($id)) {
+            return false;
+        }
         $task = $this->model->with(['Type', 'Project'])->where('id', $id)->first();
         return $task;
     }
 
     function getTasksByUserID($id) {
 
+        if(!is_integer($id)) {
+            return false;
+        }
         $tasks = $this->model->with(['Type', 'Project'])->whereHas('Project', function ($query) use ($id) {
             $query->where('user_id', $id);
         })->orderBy('created_at', 'desc')->get();
@@ -144,7 +171,10 @@ class TaskService
                 })->whereHas('TaskLog', function ($query) use ($taskId) {
                     $query->where('task_type_id', '>', 1);
                 })->delete();
-                $this->model_log->where('task_id', '=', $task->id)->where('task_type_id', '>', 1)->delete();
+                $this->model_log->where([
+                    ['task_id', '=', $task->id],
+                    ['task_type_id', '>', 1]
+                ])->delete();
                 break;
 
             case 'Done':
@@ -156,7 +186,10 @@ class TaskService
                 })->whereHas('TaskLog', function ($query) use ($taskId) {
                     $query->where('task_type_id', '>', 2);
                 })->delete();
-                $this->model_log->where('task_id', '=', $task->id)->where('task_type_id', '>', 2)->delete();
+                $this->model_log->where([
+                    ['task_id', '=', $task->id],
+                    ['task_type_id', '>', 2]
+                ])->delete();
                 break;
         }
 
@@ -174,10 +207,12 @@ class TaskService
         $mentors = [];
         foreach($user['mentors'] as $mentor) {
             $mentors[] = $mentor['id'];
+            \Illuminate\Support\Facades\Mail::to($mentor['email'])->send(new \App\Mail\notify());
         }
         $supervisors = [];
         foreach($user['supervisors'] as $supervisor) {
             $supervisors[] = $supervisor['id'];
+            \Illuminate\Support\Facades\Mail::to($supervisor['email'])->send(new \App\Mail\notify());
         }
 
         $notify->Users()->sync(array_merge($mentors, $supervisors));
@@ -190,7 +225,7 @@ class TaskService
     }
 
     function getUserById($id) {
-        return User::with(['Users', 'Students', 'Mentors', 'Supervisors'])->where('id', $id)->first();
+        return $this->model_user->with(['Users', 'Students', 'Mentors', 'Supervisors'])->where('id', $id)->first();
     }
 
 }
