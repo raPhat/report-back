@@ -46,10 +46,6 @@ class ProjectService
 
     function store($request, $userId) {
 
-        if(!isset($request->name) || !isset($request->description)) {
-            return false;
-        }
-
         $project = new Project();
         $project->name = $request->name;
         $project->description = $request->description;
@@ -62,10 +58,6 @@ class ProjectService
 
     function update($request, $id) {
 
-        if(!isset($request->name) || !isset($request->description)) {
-            return false;
-        }
-
         $project = $this->model->findOrFail($id);
         $project->name = $request->name;
         $project->description = $request->description;
@@ -76,25 +68,16 @@ class ProjectService
     }
 
     function destroy($id) {
-        if(!is_integer($id)) {
-            return false;
-        }
         $project = $this->model->destroy($id);
 
         return $project;
     }
 
     function getMyProjectsByUserID($id) {
-        if(!is_integer($id)) {
-            return false;
-        }
         return $this->getProjectsByUserID($id);
     }
 
     function getProjectsByUserID($id) {
-        if(!is_integer($id)) {
-            return false;
-        }
         return $this->model->with(['Tasks', 'Tasks.Type'])->where('user_id', $id)->get();
     }
 

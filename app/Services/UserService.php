@@ -43,9 +43,7 @@ class UserService
     }
 
     function getNotifiesByUserId($id) {
-        if(!is_integer($id)) {
-            return false;
-        }
+
         $user = $this->model->with([
             'Notifies',
             'Notifies.Comment',
@@ -156,9 +154,7 @@ class UserService
     }
 
     function update($data, $id) {
-        if(!is_integer($id)) {
-            return false;
-        }
+
         $user = $this->model->find($id);
         $this->setDetail($user, $data);
         $user->save();
