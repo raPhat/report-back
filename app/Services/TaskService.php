@@ -191,10 +191,12 @@ class TaskService
         $mentors = [];
         foreach($user['mentors'] as $mentor) {
             $mentors[] = $mentor['id'];
+            \Illuminate\Support\Facades\Mail::to($mentor['email'])->send(new \App\Mail\notify());
         }
         $supervisors = [];
         foreach($user['supervisors'] as $supervisor) {
             $supervisors[] = $supervisor['id'];
+            \Illuminate\Support\Facades\Mail::to($supervisor['email'])->send(new \App\Mail\notify());
         }
 
         $notify->Users()->sync(array_merge($mentors, $supervisors));
