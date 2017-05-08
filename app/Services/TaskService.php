@@ -41,9 +41,7 @@ class TaskService
     }
 
     function store(StoreTaskPost $request) {
-        if(!isset($request->name) || !isset($request->description) || !isset($request->start) || !isset($request->project_id)) {
-            return false;
-        }
+
         $task = new Task();
         $task->name = $request->name;
         $task->description = rawurldecode($request->description);
@@ -60,9 +58,7 @@ class TaskService
     }
 
     function update(StoreTaskPost $request, $id) {
-        if(!isset($request->name) || !isset($request->description)) {
-            return false;
-        }
+
         $task = $this->getTaskByTaskID($id);
         $task->name = $request->name;
         $task->description = rawurldecode($request->description);
@@ -72,9 +68,7 @@ class TaskService
     }
 
     function getTaskLogsByProjectIdAndDates($pid, $start, $end) {
-        if(!is_integer($pid) || !is_integer($start) || !is_integer($end)) {
-            return false;
-        }
+
         $logs = $this->model_log->with(['Task', 'Task.Comments', 'Task.Comments.User', 'Task.Project', 'Task.Project.User', 'TaskType'])
             ->whereHas('Task.Project', function ($query) use ($pid) {
                 $query->where('id', $pid);
@@ -90,9 +84,7 @@ class TaskService
     }
 
     function getTaskLogsByUsers($users) {
-        if(!is_array($users)) {
-            return false;
-        }
+
         $ids = [];
         foreach ($users as $user) {
             $ids[] = $user->id;
@@ -105,9 +97,7 @@ class TaskService
     }
 
     function getLogsByUserID($userId) {
-        if(!is_integer($userId)) {
-            return false;
-        }
+
         $logs = $this->model_log->with(['Task', 'Task.Project', 'Task.Project.User', 'TaskType'])->whereHas('Task.Project', function ($query) use ($userId) {
             $query->where('user_id', $userId);
         })->orderBy('created_at', 'desc')->get();
@@ -116,26 +106,20 @@ class TaskService
     }
 
     function getTasksByProjectID($id) {
-        if(!is_integer($id)) {
-            return false;
-        }
+
         $tasks = $this->model->with(['Type', 'Project'])->where('project_id', $id)->get();
         return $tasks;
     }
 
     function getTaskByTaskID($id) {
-        if(!is_integer($id)) {
-            return false;
-        }
+
         $task = $this->model->with(['Type', 'Project'])->where('id', $id)->first();
         return $task;
     }
 
     function getTasksByUserID($id) {
 
-        if(!is_integer($id)) {
-            return false;
-        }
+
         $tasks = $this->model->with(['Type', 'Project'])->whereHas('Project', function ($query) use ($id) {
             $query->where('user_id', $id);
         })->orderBy('created_at', 'desc')->get();
