@@ -76,7 +76,6 @@ class CommentService
         $me = User::with(['Users'])->where('id', $user->id)->first();
         foreach ($me->users as $user) {
             $ids[] = $user['id'];
-            \Illuminate\Support\Facades\Mail::to($user['email'])->send(new \App\Mail\notify());
         }
 
         $ids = array_unique($ids);
